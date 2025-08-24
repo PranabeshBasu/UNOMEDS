@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UNOMEDS Prescription Upload</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      overflow-x: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .dashboard {
+      width: 100%;
+      background-color: #000;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 20px;
+      font-family: 'Roboto Flex', sans-serif;
+    }
+
+    .dashboard .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .prescription-section {
+      position: relative;
+      
+      background: url('static/assets/scan.jpg') no-repeat center center/cover;
+      background-size: cover;
+    }
+
+    .prescription-section::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 50%, rgba(0, 0, 0, 1) 100%);
+      z-index: 1;
+    }
+
+    .prescription-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 30px 50px;
+      color: white;
+      margin-bottom: 50px;
+    }
+
+    .prescription-text {
+      max-width: 50%;
+    }
+
+    .prescription-text h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: white;
+    }
+
+    .prescription-text p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      color: #ddd;
+    }
+
+    .upload-btn {
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #000;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .upload-btn:hover {
+      background-color: rgba(255, 255, 255, 1);
+    }
+
+    .upload-btn img {
+      height: 20px;
+      width: 20px;
+    }
+
+    .spacer {
+      height: 80px;
+    }
+
+    .info-band-wrapper {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background-color: rgba(255, 255, 255, 0.507);
+      z-index: 2;
+      padding-top: 0px;
+      margin-bottom: 0.5in; /* Ensures the space */
+    }
+
+    .info-band {
+      display: flex;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .info-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      gap: 10px;
+      padding: 20px 30px;
+    }
+
+    .info-item img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .info-item h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: black;
+    }
+
+    .info-item p {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: black;
+    }
+
+    /* New section styles */
+    .tools-section {
+      background-color: #000;
+      color: white;
+      padding: 40px 20px;
+      padding-top: 1in;  /* 1-inch padding to ensure space from the previous section */
+    }
+
+    .tools-section .tool-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .tools-section .tool-item img {
+      width:170px; /* Adjust the circle size */
+      height: 170px; /* Keep the circle size same */
+      background-color: transparent;
+      border-radius: 0%;
+      margin-right: 20px;
+      object-fit: contain; /* Ensures the image fits inside the circle without distortion */
+    }
+
+    .tools-section .tool-item h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .tools-section .tool-item p {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+  </style>
+  <style>
+    .custom-sections {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background-color: black;
+      padding: 50px 0;
+      gap: 50px;
+      flex-wrap: wrap;
+    }
+  
+    .custom-sections .section {
+      background-color: rgba(255, 255, 255, 0.07);
+      color: white;
+      width: 40%;
+      min-height: 5in;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+      text-align: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+  
+    .icon-container {
+      margin-top: 20px;
+    }
+  
+    .center-icon {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+  
+    .button-group {
+    display: flex;
+    flex-wrap: nowrap; /* Make them stay in single line */
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+  
+  .main-btn, .dropbtn {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    padding: 6px 10px; /* Smaller padding */
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem; /* Smaller text */
+    transition: background 0.3s, transform 0.2s;
+    white-space: nowrap; /* Prevent text wrapping */
+  }
+  
+    .main-btn:hover, .dropbtn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+  
+    /* Dropup */
+    .dropup {
+      position: relative;
+      display: inline-block;
+    }
+  
+    .dropup-content {
+    display: none;
+    position: absolute;
+    bottom: 35px; /* Slightly lower */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 1;
+    flex-direction: column;
+    min-width: 220px; /* To fit icons and text neatly */
+  }
+  
+  .dropup-content button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background-color: transparent;
+    color: white;
+    border: none;
+    text-align: left;
+    font-size: 0.8rem;
+    white-space: nowrap; /* No wrapping */
+    cursor: pointer;
+  }
+  
+    .dropup-content button:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  
+    .dropup:hover .dropup-content {
+      display: flex;
+    }
+
+    .dropup-content button img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .faq-section {
+  background-color: #ffffff;
+  padding: 4rem 1rem;
+}
+
+.faq-section h2 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.faq-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.faq-item {
+  padding: 1.5rem 0;
+}
+
+.faq-item button {
+  width: 100%;
+  text-align: left;
+  font-size: 1.125rem; /* 18px */
+  font-weight: 400; /* thinner text */
+  color: #1f2937; /* Gray-800 */
+  background: none;
+  border: none;
+  padding: 0.75rem 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.faq-item button:hover {
+  color: #2563eb;
+}
+
+.faq-item .arrow {
+  font-size: 1rem;
+  transition: transform 0.5s ease; /* slower rotation */
+}
+
+.faq-answer {
+  margin-top: 1rem;
+  padding-left: 0.5rem;
+  color: #6b7280; /* Gray-500 */
+  font-size: 1rem;
+  line-height: 1.6;
+  display: none;
+}
+
+.faq-item.active .faq-answer {
+  display: block;
+  animation: fadeIn 0.6s ease; /* slower fade */
+}
+
+.faq-item.active .arrow {
+  transform: rotate(180deg);
+}
+
+.divide-y > * + * {
+  border-top: 1px solid #e5e7eb;
+}
+
+/* smooth fade */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.arrow {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #1f2937; /* dark color */
+  border-bottom: 2px solid #1f2937;
+  transform: rotate(45deg);
+  transition: transform 0.5s ease;
+  margin-left: 8px;
+}
+
+.faq-item.active .arrow {
+  transform: rotate(-135deg); /* rotates nicely upwards */
+}
+  </style>
+  
+</head>
+<body>
+
+  <!-- UNOMEDS Header -->
+  <div class="dashboard">
+    <div class="logo">UNOMEDS</div>
+  </div>
+
+  <!-- Prescription Upload Section -->
+  <div class="prescription-section">
+    <div class="prescription-content">
+      <div class="prescription-text">
+        <h1>UNOMEDS offers you to upload prescription and get AI-guided medical support</h1>
+        <p>Easily upload your medical prescription or health-related documents and let our intelligent system guide you through the best next steps tailored to your condition.</p>
+        <button class="upload-btn">
+          <img src="static/assets/photo-camera.png" alt="camera icon" />
+          Upload Prescription / Medical Image
+        </button>
+        <div class="spacer"></div>
+      </div>
+
+      <!-- Info Band Section -->
+      <div class="info-band-wrapper">
+        <div class="info-band">
+          <div class="info-item">
+            <img src="static/assets/x-rays.png" alt="x-rays icon">
+            <h3>Cross-verify your diagnosis</h3>
+            <p>Doctors can be wrong—use AI to analyze your scans and confirm diagnosis accuracy.</p>
+          </div>
+          <div class="info-item">
+            <img src="static/assets/cheapermeds.png" alt="cheaper meds icon">
+            <h3>Get cheaper/alternate medicines</h3>
+            <p>AI suggests cost-effective or equivalent alternatives to your prescribed medication.</p>
+          </div>
+          <div class="info-item">
+            <img src="static/assets/hazard.png" alt="hazard icon">
+            <h3>Understand occupational hazards</h3>
+            <p>Know potential health risks from your profession and how to avoid or cure them.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+<br><br><br><br><br><br>
+  <!-- New Tools for Success Section -->
+  <div class="tools-section">
+    <div class="tool-item">
+      <img src="static/assets/signup.png" alt="Sign Up Icon" />
+      <div>
+        <h3>Sign up easily</h3>
+        <p>Create your account and get started right away, hassle-free.</p>
+      </div>
+    </div>
+
+    <div class="tool-item">
+      <img src="static/assets/xray.png" alt="Scan medical reports" />
+      <div>
+        <h3>Scan medical reports</h3>
+        <p>Upload medical images, prescriptions, and reports for instant AI analysis.</p>
+      </div>
+    </div>
+
+    <div class="tool-item">
+      <img src="static/assets/doctor.png" alt="Get Curated Roadmap" />
+      <div>
+        <h3>Get Curated Roadmap</h3>
+        <p>AI generates a personalized roadmap for your treatment.</p>
+      </div>
+    </div>
+
+    <div class="tool-item">
+      <img src="static/assets/hazard.png" alt="Work Advice & Occupational Hazards" />
+      <div>
+        <h3>Get Work Advice</h3>
+        <p>Learn about potential health hazards based on your profession.</p>
+      </div>
+    </div>
+
+    <div class="tool-item">
+      <img src="static/assets/capsule.png" alt="Cheaper Medicines" />
+      <div>
+        <h3>Get Cheaper Medicines</h3>
+        <p>AI helps you find more affordable alternatives for your prescription.</p>
+      </div>
+    </div>
+
+    <div class="tool-item">
+      <img src="static/assets/ai.png" alt="Chat for Disease Diagnosis" />
+      <div>
+        <h3>Chat for Diagnosis</h3>
+        <p>Communicate with AI and get context-specific responses regarding your symptoms.</p>
+      </div>
+    </div>
+
+    <div class="tool-item">
+      <img src="static/assets/ques.png" alt="Cross-verify Your Doctor" />
+      <div>
+        <h3>Cross-verify Your Doctor</h3>
+        <p>AI helps you verify the credibility of your doctor based on diagnosis accuracy.</p>
+      </div>
+    </div>
+
+    <div class="tool-item">
+      <img src="static/assets/book.png" alt="Learn More About Diseases" />
+      <div>
+        <h3>Learn More About Diseases</h3>
+        <p>Access medical literature to understand your condition better.</p>
+      </div>
+    </div>
+  </div>
+  <div class="custom-sections">
+    <div class="section">
+      <div class="icon-container">
+        <h3>Input Prescription or Medical Scan</h3><br><br>
+        <img src="static/assets/takepic.png" alt="Take Picture" class="center-icon">
+      </div>
+  
+      <div class="button-group">
+        <div class="dropup">
+          <button class="dropbtn">+</button>
+          <div class="dropup-content">
+            <button><img src="static/assets/photos.png" alt="Upload from Computer">Upload from Computer</button>
+            <button><img src="static/assets/google.png" alt="Upload from Google Drive">Upload from Google Drive</button>
+            <button><img src="static/assets/clip.png" alt="Paste Link">Paste Link</button>
+          </div>          
+        </div>
+  
+        <button class="main-btn">Search</button>
+        <button class="main-btn">Reason</button>
+        <button class="main-btn">Deep Research</button>
+        <button class="main-btn">Recreate Prescription</button>
+        <!-- Add more buttons if needed -->
+      </div>
+    </div>
+  
+    <div class="section">
+      <h2>Section 2</h2>
+      <p>Content for Section 2 goes here.</p>
+    </div>
+  </div>
+  
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-container divide-y">
+      
+      <div class="faq-item">
+        <button onclick="toggleFaq(this)">
+          Can I upload a scan of handwritten prescription?
+          <span class="arrow"></span>
+        </button>
+        <div class="faq-answer">
+          You can upload any handwritten or printed copy.
+        </div>
+      </div>
+  
+      <div class="faq-item">
+        <button onclick="toggleFaq(this)">
+          Is there a limit to file size when uploading prescriptions?
+          <span class="arrow"></span>
+        </button>
+        <div class="faq-answer">
+          Yes, the maximum allowed file size is 5MB per upload.
+        </div>
+      </div>
+  
+      <div class="faq-item">
+        <button onclick="toggleFaq(this)">
+          How do I know if my prescription is accepted?
+          <span class="arrow"></span>
+        </button>
+        <div class="faq-answer">
+          You will receive a confirmation email once your prescription is verified by our team.
+        </div>
+      </div>
+  
+      <div class="faq-item">
+        <button onclick="toggleFaq(this)">
+          Can I order medicines without uploading a prescription?
+          <span class="arrow"></span>
+        </button>
+        <div class="faq-answer">
+          Some OTC (over-the-counter) medicines are available without a prescription. Prescription drugs need valid uploads.
+        </div>
+      </div>
+  
+      <div class="faq-item">
+        <button onclick="toggleFaq(this)">
+          What file types are supported for prescription uploads?
+          <span class="arrow"></span>
+        </button>
+        <div class="faq-answer">
+          We accept JPEG, PNG, and PDF files for prescription uploads.
+        </div>
+      </div>
+  
+    </div>
+  </section>
+  
+  <script>
+  function toggleFaq(button) {
+    const item = button.parentElement;
+    item.classList.toggle('active');
+  }
+  </script>
+  
+</body>
+</html>

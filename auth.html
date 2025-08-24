@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UNOMEDS Authentication</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f9f9;
+      color: #2e3d49;
+      margin: 0;
+    }
+    .dashboard {
+      background: #000; color: white;
+      padding: 4px 20px; font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .auth-container {
+      display: flex;
+      height: calc(100vh - 48px);
+      padding: 20px;
+      gap: 20px;
+    }
+    .auth-image {
+      flex: 1;
+      background: url('static/assets/auth.jpg') center/cover no-repeat;
+      border-top-left-radius: 16px;
+      border-bottom-left-radius: 16px;
+    }
+    .auth-form {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px;
+    }
+    .auth-form h2 {
+      margin-bottom: 30px;
+    }
+    .auth-form input, .continue-btn, .auth-option, .register-btn {
+      padding: 14px; margin-bottom: 20px;
+      font-size: 1rem; border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .continue-btn, .register-btn {
+      background: #000; color: #fff; border: none; cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .continue-btn:hover, .register-btn:hover {
+      background: #444;
+    }
+    .auth-option {
+      background: #f5f5f5;
+      display: flex; align-items: center;
+      justify-content: center;
+      gap: 10px; cursor: pointer;
+      padding: 12px;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+    .auth-option:hover {
+      background: #e1e1e1;
+    }
+    .auth-option img {
+      width: 22px; height: 22px;
+    }
+    .divider {
+      text-align: center;
+      color: #aaa;
+    }
+    .new-user {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+    #messageBox {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    #messageBox.success { background: #e8f5e9; color: #2e7d32; }
+    #messageBox.error { background: #ffebee; color: #c62828; }
+  </style>
+</head>
+<body>
+
+  <!-- UNOMEDS Header -->
+  <div class="dashboard">UNOMEDS</div>
+
+  <!-- Auth Layout -->
+  <div class="auth-container">
+    <div class="auth-image"></div>
+
+    <div class="auth-form">
+      <h2>Authenticate to UNOMEDS</h2>
+
+      <input id="email-phone-input" type="text" placeholder="Enter Phone Number or Email" />
+      <input id="password-input" type="password" placeholder="Enter Password" />
+      <button class="continue-btn" id="email-login-btn">Login</button>
+
+      <div class="divider">---------------------- or ----------------------</div>
+
+      <div class="auth-option" id="google-signin-btn">
+        <img src="static/assets/google.png" alt="Google" />
+        Continue with Google
+      </div>
+
+      <div class="auth-option" id="apple-signin-btn">
+        <img src="static/assets/apple-logo.png" alt="Apple" />
+        Continue with Apple
+      </div>
+
+      <div class="new-user">
+        New to UNOMEDS?
+      </div>
+      <button class="register-btn" id="register-btn">Register</button>
+
+      <!-- Message box -->
+      <div id="messageBox"></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      GoogleAuthProvider,
+      OAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    // 🔑 Replace these placeholders with your Firebase project config
+    const firebaseConfig = {
+    apiKey: "AIzaSyBeEoZBuD1m8oAuzM9q52vf_TBabpmVgnM",
+    authDomain: "new-project-4210e.firebaseapp.com",
+    projectId: "new-project-4210e",
+    storageBucket: "new-project-4210e.firebasestorage.app",
+    messagingSenderId: "260501241994",
+    appId: "1:260501241994:web:5641addee38a619a59ed73",
+    measurementId: "G-CCF3JJC87W"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const messageBox = document.getElementById("messageBox");
+    function showMessage(msg, type="error") {
+      messageBox.style.display = "block";
+      messageBox.textContent = msg;
+      messageBox.className = type === "success" ? "success" : "error";
+      messageBox.id = "messageBox"; // keep ID intact
+    }
+
+    // Google Sign-In
+document.getElementById("google-signin-btn").addEventListener("click", async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'  // 👈 ensures multiple accounts popup
+    });
+    const result = await signInWithPopup(auth, provider);
+    showMessage("Welcome " + result.user.displayName, "success");
+    setTimeout(() => window.location.href = "/hero.html", 1000);
+  } catch (error) {
+    console.error("Google sign-in failed", error);
+    showMessage("Google Sign-in failed: " + error.message, "error");
+  }
+});
+
+    // Apple Sign-In
+    document.getElementById("apple-signin-btn").addEventListener("click", async () => {
+      try {
+        const provider = new OAuthProvider("apple.com");
+        const result = await signInWithPopup(auth, provider);
+        showMessage("Signed in with Apple: " + result.user.email, "success");
+        setTimeout(() => window.location.href = "/hero.html", 1000);
+      } catch (error) {
+        console.error("Apple sign-in failed", error);
+        showMessage("Apple Sign-in failed. Make sure your app is configured in Apple Developer Console.", "error");
+      }
+    });
+
+    // Email/Password Login
+    document.getElementById("email-login-btn").addEventListener("click", async () => {
+      const email = document.getElementById("email-phone-input").value.trim();
+      const password = document.getElementById("password-input").value;
+      if (!email || !password) {
+        showMessage("Please enter both email/phone and password.", "error");
+        return;
+      }
+      try {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        showMessage("Logged in as: " + result.user.email, "success");
+        setTimeout(() => window.location.href = "/hero.html", 1000);
+      } catch (error) {
+        console.error("Login failed", error);
+        showMessage("Login failed: " + error.message, "error");
+      }
+    });
+
+    // Register Button Handler
+    document.getElementById("register-btn").addEventListener("click", () => {
+      window.location.href = "register.html";
+    });
+  </script>
+</body>
+</html>

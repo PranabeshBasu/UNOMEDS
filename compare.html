@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medicine Comparison</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f8fbff 100%);
+    min-height: 100vh;
+    color: #1a1a1a;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #0d47a1;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #0d47a1, #1976d2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header p {
+    font-size: 1.1rem;
+    color: #546e7a;
+}
+
+.medicine-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(13, 71, 161, 0.1);
+    border: 1px solid rgba(25, 118, 210, 0.1);
+    margin-bottom: 2rem;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .input-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.input-container input {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid #e3f2fd;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+.input-container input:focus {
+    outline: none;
+    border-color: #1976d2;
+    background: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+}
+
+.camera-btn {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    border: none;
+    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.camera-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4);
+}
+
+.compare-btn {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.compare-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4);
+}
+
+.compare-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.result-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(13, 71, 161, 0.1);
+    border: 1px solid rgba(25, 118, 210, 0.1);
+    animation: slideUp 0.5s ease-out;
+    margin-top: 2rem;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.confidence-arc-container {
+    margin: 1.5rem 0;
+    display: flex;
+    justify-content: center;
+}
+
+.progress-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+}
+
+.progress-bg {
+    fill: none;
+    stroke: #e3f2fd;
+    stroke-width: 10;
+}
+
+.progress-fill {
+    fill: none;
+    stroke-width: 10;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 1.5s ease-in-out, stroke 0.5s ease;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0d47a1;
+}
+
+.progress-label {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: 600;
+    color: #546e7a;
+}
+
+.section {
+    margin-bottom: 2rem;
+}
+
+.section h3 {
+    color: #0d47a1;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.styled-list {
+    list-style: none;
+    padding: 0;
+}
+
+.styled-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: #f8fbff;
+    border-radius: 8px;
+    border-left: 4px solid #1976d2;
+}
+
+.styled-list li::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    border-radius: 50%;
+    margin-top: 0.5rem;
+    flex-shrink: 0;
+}
+
+.verdict-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e3f2fd;
+}
+
+.verdict-section h3 {
+    color: #0d47a1;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.verdict-card {
+    background: linear-gradient(135deg, #e3f2fd, #f8fbff);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(25, 118, 210, 0.2);
+}
+
+.verdict-card p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0d47a1;
+    margin: 0;
+}
+
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid #1976d2;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    max-width: 300px;
+}
+
+.toast.show { transform: translateX(0); }
+.toast.error { border-left-color: #f44336; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Medicine Comparison</h1>
+        <p>Compare medicines safely with AI-powered analysis</p>
+    </div>
+
+    <form class="medicine-form" id="medicineForm">
+        <div class="input-row">
+            <div class="input-container">
+                <input type="text" id="med1" placeholder="Prescribed Medicine" required>
+                <button type="button" class="camera-btn" onclick="handleCameraClick('med1')">📷</button>
+            </div>
+            <div class="input-container">
+                <input type="text" id="med2" placeholder="Available Medicine" required>
+                <button type="button" class="camera-btn" onclick="handleCameraClick('med2')">📷</button>
+            </div>
+        </div>
+        <button type="submit" class="compare-btn" id="compareBtn">
+            <span class="btn-text">Compare Medicines</span>
+            <div class="loading-spinner" style="display:none;">
+                <div class="spinner"></div>
+                <span>Analyzing...</span>
+            </div>
+        </button>
+    </form>
+
+    <div id="result"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const form = document.getElementById('medicineForm');
+const compareBtn = document.getElementById('compareBtn');
+const btnText = compareBtn.querySelector('.btn-text');
+const loadingSpinner = compareBtn.querySelector('.loading-spinner');
+const resultContainer = document.getElementById('result');
+
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const med1 = document.getElementById('med1').value.trim();
+    const med2 = document.getElementById('med2').value.trim();
+
+    if (!med1 || !med2) {
+        showToast('Please enter both medicine names.', 'error');
+        return;
+    }
+
+    btnText.style.display = 'none';
+    loadingSpinner.style.display = 'flex';
+    compareBtn.disabled = true;
+
+    try {
+        // Call your backend API
+        const res = await fetch('http://127.0.0.1:8020/api/compare', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ med1, med2 })
+});
+
+        const data = await res.json();
+        renderResult(data);
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btnText.style.display = 'inline';
+        loadingSpinner.style.display = 'none';
+        compareBtn.disabled = false;
+    }
+});
+
+function renderResult(data) {
+    if (data.error) {
+        resultContainer.innerHTML = `<p style="color:red">${data.error}</p>`;
+        return;
+    }
+
+    resultContainer.innerHTML = `
+        <div class="result-card">
+            <div class="confidence-section">
+                <h3>Confidence Score</h3>
+                <div class="confidence-arc-container">
+                    <div class="progress-container">
+                        <svg viewBox="0 0 100 100" class="progress-circle">
+                            <circle class="progress-bg" cx="50" cy="50" r="40"></circle>
+                            <circle class="progress-fill" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                        </svg>
+                        <div class="progress-text">0%</div>
+                    </div>
+                </div>
+                <div class="progress-label">Match Confidence</div>
+            </div>
+
+            <div class="section">
+                <h3>Side Effects</h3>
+                <ul class="styled-list">
+                    ${(data.side_effects || []).map(se => `<li>${se}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="section">
+                <h3>Symptoms Treated</h3>
+                <ul class="styled-list">
+                    ${(data.symptoms_treated || []).map(sym => `<li>${sym}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="verdict-section">
+                <h3>Verdict</h3>
+                <div class="verdict-card"><p>${data.verdict || 'No verdict available'}</p></div>
+            </div>
+        </div>
+    `;
+
+    setTimeout(() => animateProgressBar(data.confidence || 0), 500);
+}
+
+function animateProgressBar(target) {
+    const fill = document.querySelector('.progress-fill');
+    const text = document.querySelector('.progress-text');
+    if (!fill || !text) return;
+
+    const circ = 2 * Math.PI * 40;
+    const targetOffset = circ - (target / 100) * circ;
+    fill.style.stroke = target < 50 ? '#f44336' : target < 75 ? '#ff9800' : '#4caf50';
+    fill.style.strokeDashoffset = circ;
+
+    setTimeout(() => {
+        fill.style.strokeDashoffset = targetOffset;
+        let curr = 0;
+        const timer = setInterval(() => {
+            curr += target / (1500/50);
+            if (curr >= target) { curr = target; clearInterval(timer); }
+            text.textContent = Math.round(curr) + '%';
+        }, 50);
+    }, 300);
+}
+
+function showToast(message, type='info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast ' + (type==='error'?'error':'');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function handleCameraClick(field) {
+    showToast(`Camera feature for ${field} is not implemented yet.`);
+}
+
+// Input focus animation
+document.querySelectorAll('.input-container input').forEach(input => {
+    input.addEventListener('focus', ()=>input.parentElement.style.transform='scale(1.02)');
+    input.addEventListener('blur', ()=>input.parentElement.style.transform='scale(1)');
+});
+</script>
+</body>
+</html>

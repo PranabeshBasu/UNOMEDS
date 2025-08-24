@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNOMEDS - Medical Document Summary</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+    --primary-color: #ffffff; /* Changed from black */
+    --secondary-color: #aaaaaa;
+    --text-color: #dddddd;
+    --light-bg: #111111;  /* Changed from light to dark */
+    --white-color: #000000; /* Changed from white to black */
+    --border-color: #444444;
+    --error-color: #ff4d4f;
+    --error-bg: #330000;
+    --upload-area-bg: #1a1a1a;
+    --upload-area-hover-bg: #2a2a2a;
+    --button-hover-bg: #eeeeee;
+    --button-disabled-bg: #555555;
+}
+
+body {
+    font-family: 'Lato', sans-serif;
+    background: linear-gradient(rgba(0, 0, 0, 0.466), rgba(0, 0, 0, 0.479)), 
+                url("/static/assets/trendy-test-result-vector.jpg") 
+                no-repeat center center / cover fixed;
+
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 15px;
+    margin: 0;
+    min-height: 100vh;
+    box-sizing: border-box; 
+    -webkit-backdrop-filter: brightness(0.7);
+    backdrop-filter: brightness(0.7); 
+}
+
+
+
+        .container {
+            max-width: 750px;
+            width: 100%;
+        }
+
+        .title-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title-area h2 {
+            font-family: 'Roboto', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .card {
+            background-color: var(--white-color);
+            padding: 35px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card h3 {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card h3 i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--primary-color);
+            border-radius: 8px;
+            padding: 35px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--upload-area-bg);
+        }
+
+        .upload-area:hover,
+        .upload-area.highlight {
+            background-color: var(--upload-area-hover-bg);
+            border-color: var(--button-hover-bg);
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .upload-area p {
+            margin: 0;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .upload-area span {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            display: block;
+            margin-top: 5px;
+        }
+
+        #file-name {
+            font-size: 1rem;
+            color: var(--secondary-color);
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        button {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 6px;
+            padding: 12px 25px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button i {
+            margin-right: 8px;
+        }
+
+        button:hover {
+            background-color: var(--button-hover-bg);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:disabled {
+            background-color: var(--button-disabled-bg);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #summary-output {
+            background-color: var(--white-color);
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            min-height: 100px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: var(--text-color);
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        #summary-output:empty::before {
+            content: 'Your document summary will appear here...';
+            color: var(--secondary-color);
+            font-style: italic;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: var(--error-color);
+            background-color: var(--error-bg);
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+            text-align: center;
+            font-weight: 500;
+        }
+        #submit-button {
+            background-color: #333333;  /* dark gray */
+            color: #ffffff;             /* white text */
+            border: 1px solid #888888;
+            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+        }
+
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 20px;
+            }
+            .title-area h2 {
+                font-size: 1.8rem;
+            }
+            .card h3 {
+                font-size: 1.3rem;
+            }
+            .upload-area {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-area">
+            <h2>UNOMEDS Document Analyzer</h2>
+        </div>
+
+        <div class="card upload-card">
+            <h3><i class="fas fa-upload"></i> Upload Medical Document</h3>
+            <div class="upload-area" id="upload-area">
+                <i class="fas fa-file-pdf"></i>
+                <p>Click or Drag PDF Here</p>
+                <span>Supports PDF files only (e.g., test results, reports)</span>
+            </div>
+            <input type="file" id="file-input" name="file" accept="application/pdf" style="display: none;">
+            <div id="file-name">No file selected</div>
+            <button id="submit-button">
+                <i class="fas fa-cogs"></i> Generate Summary
+            </button>
+        </div>
+
+        <div class="card summary-card">
+            <h3><i class="fas fa-notes-medical"></i> Summary</h3>
+            <div id="loading-spinner" class="loading-spinner"></div>
+            <div id="error-message" class="error-message"></div>
+            <div id="summary-output"></div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const uploadArea = document.getElementById('upload-area');
+        const fileNameDisplay = document.getElementById('file-name');
+        const summaryOutput = document.getElementById('summary-output');
+        const submitButton = document.getElementById('submit-button');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const errorMessage = document.getElementById('error-message');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = `Selected: ${fileInput.files[0].name}`;
+                errorMessage.style.display = 'none';
+            } else {
+                fileNameDisplay.textContent = 'No file selected';
+            }
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            uploadArea.style.backgroundColor = 'var(--upload-area-hover-bg)';
+            uploadArea.style.borderColor = 'var(--button-hover-bg)';
+        }
+
+        function unhighlight(e) {
+            uploadArea.style.backgroundColor = 'var(--upload-area-bg)';
+            uploadArea.style.borderColor = 'var(--primary-color)';
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                fileInput.files = files;
+                fileNameDisplay.textContent = `Selected: ${files[0].name}`;
+                errorMessage.style.display = 'none';
+            } else if (files.length > 0) {
+                errorMessage.textContent = 'Please select a valid PDF file.';
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        submitButton.addEventListener('click', async (e) => {
+            e.preventDefault(); // Optional for button click, kept for consistency
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                errorMessage.textContent = 'Please select a PDF file first.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            summaryOutput.textContent = ''; // Clear previous summary
+            summaryOutput.style.display = 'none'; // Hide summary area
+            errorMessage.style.display = 'none'; // Hide previous error
+            loadingSpinner.style.display = 'block'; // Show spinner
+            submitButton.disabled = true; // Disable button
+            submitButton.innerHTML = '<i class="fas fa-hourglass-half"></i> Processing...';
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/pdfupload/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    summaryOutput.textContent = result.summary; // Display summary
+                    summaryOutput.style.display = 'block'; // Show summary area
+                } else {
+                    errorMessage.textContent = `❌ Error: ${result.error || 'Unable to generate summary. Please try again.'}`;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = `❌ Network Error: ${error.message}`;
+                errorMessage.style.display = 'block';
+            } finally {
+                loadingSpinner.style.display = 'none';
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-cogs"></i> Generate Summary';
+            }
+        });
+    </script>
+</body>
+</html>
+
+<!-- Updated on May2 --SB -->

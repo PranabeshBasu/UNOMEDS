@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UNOMEDS — Your AI Doctor in One Click</title>
+  <style>
+    /* ===================== THEME & SCALE ===================== */
+    :root{
+      --primary:#1E66FF;               /* accent blue */
+      --primary-600:#0b5cff;
+      --text:#0b1220;                  /* deep slate */
+      --muted:#667085;                 /* gray */
+      --bg:#f4f9f9;
+      --card:#ffffff;
+      --line:#e8eef5;
+      --shadow-xs:0 2px 6px rgba(0,0,0,.05);
+      --shadow-sm:0 6px 14px rgba(0,0,0,.06);
+      --shadow-md:0 18px 48px rgba(0,0,0,.10);
+      --radius:16px;
+      --container:1280px;
+
+      /* Spacing scale (more generous) */
+      --s-1:8px;   --s-2:12px;  --s-3:16px;  --s-4:20px;
+      --s-5:24px;  --s-6:32px;  --s-7:40px;  --s-8:56px;
+      --s-9:72px;  --s-10:96px; --s-11:120px;
+
+      /* Type scale (bigger, responsive) */
+      --h1:clamp(2.6rem, 4vw + 1.2rem, 4rem);
+      --h2:clamp(2rem, 2.2vw + 1rem, 2.6rem);
+      --lead:clamp(1.05rem, .6vw + .9rem, 1.25rem);
+      --body:1.05rem;
+      --small:.96rem;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      display:flex;flex-direction:column;min-height:100vh;
+      line-height:1.55;
+    }
+    img{display:block;max-width:100%}
+    a{text-decoration:none}
+
+    .container{max-width:var(--container);margin:0 auto;padding:0 var(--s-6)}
+    section{scroll-margin-top:100px}
+
+    /* ===================== NAVBAR ===================== */
+    .dashboard{background:#000;color:#fff;position:sticky;top:0;z-index:1000;box-shadow:var(--shadow-xs)}
+    .nav-inner{
+      max-width:var(--container);margin:0 auto;
+      padding:var(--s-4) var(--s-6);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .nav-left{display:flex;align-items:center;gap:var(--s-7)}
+    .logo{font-size:1.35rem;font-weight:900;letter-spacing:.2px}
+    .nav-links{display:flex;gap:var(--s-5)}
+    .nav-links a{
+      color:#fff;opacity:.92;font-size:1rem;padding:8px 12px;border-radius:10px;transition:.15s;
+    }
+    .nav-links a:hover{opacity:1;background:rgba(255,255,255,.08)}
+    .right-section{display:flex;align-items:center;gap:var(--s-4)}
+    /* ===================== HERO ===================== */
+    .hero{
+      padding:var(--s-10) 0 var(--s-9);
+      background:linear-gradient(180deg,#f7fbff 0%, #f4f9f9 100%);
+      border-bottom:1px solid var(--line);
+    }
+    .hero-grid{
+      display:grid;grid-template-columns:1.25fr 1fr;gap:var(--s-8);align-items:center;
+    }
+    .hero h1{
+      font-size:var(--h1);line-height:1.06;font-weight:900;margin-bottom:var(--s-3);
+      letter-spacing:.2px;
+    }
+    .accent{color:var(--primary)}
+    .hero p{
+      font-size:var(--lead);color:#2f3a46;max-width:720px;margin-bottom:var(--s-6);
+    }
+    .cta{display:flex;align-items:center;gap:var(--s-4);margin-bottom:var(--s-4)}
+    .btn{
+      border:none;padding:14px 20px;border-radius:14px;font-weight:900;
+      cursor:pointer;font-size:1rem;letter-spacing:.2px;transition:filter .15s, transform .05s;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{background:var(--primary);color:#fff;box-shadow:var(--shadow-md)}
+    .btn-primary:hover{filter:brightness(.95)}
+    .btn-secondary{background:#fff;color:var(--primary);border:2px solid var(--primary)}
+    .btn-secondary:hover{background:#f2f6ff}
+
+    .badges{display:flex;gap:var(--s-5);flex-wrap:wrap;margin-top:var(--s-2)}
+    .badges li{
+      list-style:none;font-size:var(--small);color:#0f172a;background:#fff;
+      border:1px solid #e8eefc;padding:10px 14px;border-radius:999px;
+      box-shadow:0 6px 14px rgba(0,0,0,.05);
+    }
+
+    /* Right: Chat-style card (taller, airier) */
+    .chat-wrap{display:flex;align-items:center;justify-content:center}
+    .chat-card{
+      width:100%;max-width:620px;background:var(--card);
+      border-radius:22px;box-shadow:var(--shadow-md);padding:22px;border:1px solid #eef2f7;
+    }
+    .bubble{max-width:78%;padding:12px 16px;margin:12px 0;border-radius:16px;font-size:1rem;line-height:1.4}
+    .ai{background:#f2f6ff;color:#0f172a;border:1px solid #e0e9ff}
+    .user{background:#1b74ff;color:#fff;margin-left:auto}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+    .stat{background:#f9fbff;border:1px solid #e5ecff;border-radius:14px;padding:14px 12px;text-align:center;font-size:1rem;color:#334155}
+    .stat .num{font-weight:900;font-size:1.15rem;color:var(--primary-600)}
+
+    /* ===================== SERVICES (4 vertical cards side-by-side) ===================== */
+    .services{padding:var(--s-10) 0 var(--s-8)}
+    .headline{font-size:var(--h2);font-weight:900;margin-bottom:var(--s-2)}
+    .headline .accent{color:var(--primary)}
+    .section-sub{color:var(--muted);font-size:var(--lead);margin-bottom:var(--s-8);max-width:860px}
+
+    .services-grid{
+      display:grid;gap:var(--s-6);
+      grid-template-columns:repeat(4,1fr); /* side-by-side across width */
+    }
+    .service-card{
+      background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);
+      display:flex;flex-direction:column;overflow:hidden;min-height:560px;
+    }
+    .svc-media{height:240px;overflow:hidden}
+    .svc-media img{width:100%;height:100%;object-fit:cover}
+    .svc-body{padding:var(--s-6);display:flex;flex-direction:column;gap:var(--s-3);flex:1}
+    .svc-title{font-weight:900;font-size:1.25rem;letter-spacing:.2px}
+    .svc-text{font-size:1.05rem;color:#4b5563}
+    .svc-list{margin:var(--s-2) 0 var(--s-1) var(--s-6);color:#374151;font-size:1.02rem}
+    .svc-list li{margin:8px 0}
+    .svc-actions{padding:var(--s-6)}
+    .btn-learn{
+      width:100%;display:inline-flex;align-items:center;justify-content:center;
+      background:#f3f6ff;color:#0b5cff;border:1px solid #dfe8ff;
+      padding:12px 16px;border-radius:12px;font-weight:900;cursor:pointer;transition:.15s;
+      font-size:1.02rem;
+    }
+    .btn-learn:hover{background:#e9f0ff}
+
+    /* ===================== MID CTA BAND ===================== */
+    .cta-band{
+      margin:var(--s-10) 0 var(--s-9);background:#fff;border:1px solid var(--line);border-radius:20px;
+      box-shadow:var(--shadow-sm);padding:var(--s-8);
+      display:flex;align-items:center;justify-content:space-between;gap:var(--s-6);
+    }
+    .cta-band h3{font-size:1.6rem}
+    .cta-band p{color:#4b5563;font-size:1.06rem;margin-top:6px}
+    .cta-actions{display:flex;gap:var(--s-4)}
+
+    /* ===================== ABOUT (expanded) ===================== */
+    .about{padding:var(--s-10) 0}
+    .about-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:var(--s-8);align-items:stretch}
+    .about p{color:#374151;font-size:1.06rem;line-height:1.75}
+    .about .points{margin-top:var(--s-4)}
+    .about .points li{margin:10px 0 0 22px}
+    .about-box{
+      background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);
+      padding:var(--s-7);display:flex;flex-direction:column;gap:var(--s-4);justify-content:center
+    }
+
+    /* ===================== FAQ (pure HTML, adds scroll depth) ===================== */
+    .faq{padding:var(--s-10) 0}
+    .faq h2{font-size:var(--h2);font-weight:900;margin-bottom:var(--s-6)}
+    .faq-wrap{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-6)}
+    details{
+      background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-xs);
+      padding:var(--s-5);font-size:1.06rem
+    }
+    details summary{font-weight:800;cursor:pointer;outline:none}
+    details[open]{box-shadow:var(--shadow-sm)}
+    details p{margin-top:var(--s-3);color:#475569}
+
+    /* ===================== FOOTER ===================== */
+    footer{
+      background:#0f172a;color:#cbd5e1;padding:var(--s-11) 0 var(--s-9);margin-top:var(--s-11);
+      border-top:1px solid #1f2937;
+    }
+    .footer-content{
+      max-width:var(--container);margin:0 auto;padding:0 var(--s-6);
+      display:grid;gap:var(--s-7);grid-template-columns:2fr 1fr 1fr 1.2fr;
+    }
+    footer h4{color:#fff;margin-bottom:var(--s-3);font-size:1.15rem}
+    footer p, footer ul{font-size:1.02rem;line-height:1.8;margin-bottom:var(--s-3)}
+    footer ul{list-style:none;padding:0}
+    footer li{margin-bottom:10px}
+    footer a{color:#60a5fa;text-decoration:none}
+    footer a:hover{text-decoration:underline}
+    .newsletter{display:flex;gap:10px;margin-top:var(--s-3)}
+    .newsletter input{
+      flex:1;padding:12px 14px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#cbd5e1
+    }
+    .newsletter button{
+      padding:12px 16px;border-radius:12px;border:1px solid #4063ff;background:#1E66FF;color:#fff;font-weight:900;cursor:pointer
+    }
+    .copyright{
+      max-width:var(--container);margin:var(--s-8) auto 0;padding:var(--s-6) var(--s-6) 0;border-top:1px solid #243041;
+      text-align:center;font-size:.95rem;color:#94a3b8;
+    }
+
+    /* ===================== FLOATING AI BUTTON ===================== */
+    .ai-button{
+      position:fixed;bottom:32px;right:32px;width:68px;height:68px;background:#000;border-radius:50%;
+      box-shadow:0 6px 16px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;
+      font-weight:900;color:#fff;cursor:pointer;z-index:999;font-size:1.25rem;transition:transform .2s ease;
+    }
+    .ai-button:hover{transform:scale(1.08)}
+
+    /* ===================== RESPONSIVE ===================== */
+    @media (max-width: 1200px){
+      .services-grid{grid-template-columns:repeat(3,1fr)}
+      .footer-content{grid-template-columns:1.5fr 1fr 1fr}
+    }
+    @media (max-width: 980px){
+      .hero-grid{grid-template-columns:1fr}
+      .about-grid{grid-template-columns:1fr}
+      .services-grid{grid-template-columns:repeat(2,1fr)}
+      .cta-band{flex-direction:column;align-items:flex-start}
+      .faq-wrap{grid-template-columns:1fr}
+    }
+    @media (max-width: 560px){
+      .nav-links{display:none}
+      .services-grid{grid-template-columns:1fr}
+      .hero{padding:var(--s-9) 0 var(--s-8)}
+      .cta{flex-wrap:wrap}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== NAVBAR ===================== -->
+  <div class="dashboard">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <div class="logo">UNOMEDS</div>
+        <nav class="nav-links">
+          <a href="#home">Home</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+      <div class="right-section">
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== HERO ===================== -->
+  <header id="home" class="hero">
+  <div class="container hero-grid">
+    <div>
+      <h1>Your AI Doctor in <span class="accent">One Click</span></h1>
+      <p>
+        Get instant medical consultations, AI-powered diagnostics, and personalized healthcare
+        solutions from the comfort of your home. Crafted with privacy-first design and
+        reliable guidance to help you decide when to seek care.
+      </p>
+
+      <div class="cta">
+        <!-- ✅ Updated to scroll to services -->
+        <button class="btn btn-primary" onclick="location.href='#services'">Get Started →</button>
+        <button class="btn btn-secondary" onclick="alert('Demo coming soon!')">▶ Watch Demo</button>
+      </div>
+
+      <ul class="badges">
+        <li>HIPAA Compliant</li>
+        <li>24/7 Available</li>
+        <li>80M+ Users</li>
+      </ul>
+    </div>
+
+    <div class="chat-wrap" aria-hidden="true">
+      <div class="chat-card">
+        <div class="bubble ai">Hi! I'm your AI doctor. How can I help today?</div>
+        <div class="bubble user">I have a headache and feel tired.</div>
+        <div class="bubble ai">Let me analyze your symptoms. Based on your description…</div>
+        <div class="stats">
+          <div class="stat"><div class="num">98%</div>Accuracy Rate</div>
+          <div class="stat"><div class="num">&lt;30s</div>Response Time</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+  <main>
+
+    <!-- ===================== SERVICES ===================== -->
+    <section id="services" class="services">
+      <div class="container">
+        <h2 class="headline">Our <span class="accent">Services</span></h2>
+        <p class="section-sub">
+          Comprehensive healthcare solutions powered by artificial intelligence, designed to
+          make quality medical care accessible to everyone.
+        </p>
+
+        <!-- 4 vertical cards side-by-side (titles/descriptions updated) -->
+        <div class="services-grid">
+
+          <!-- Card 1 -->
+          <article class="service-card">
+            <div class="svc-media">
+              <img src="static/assets/compare.jpg" alt="Compare Alternate Medicines" loading="lazy">
+            </div>
+            <div class="svc-body">
+              <div class="svc-title">Compare Alternate Medicines</div>
+              <p class="svc-text">
+                Don't Get Fooled! Your own medicine comparison assistant is here.
+              </p>
+              <ul class="svc-list">
+                <li>24/7 Availability</li>
+                <li>Instant Responses</li>
+                <li>Evidence-Based Advice</li>
+              </ul>
+            </div>
+            <div class="svc-actions">
+              <button class="btn-learn" onclick="location.href='compare.html'">Learn More →</button>
+            </div>
+          </article>
+
+          <!-- Card 2 -->
+          <article class="service-card">
+            <div class="svc-media">
+              <img src="static/assets/medicine.jpg" alt="Medicine Suggestions & Practices" loading="lazy">
+            </div>
+            <div class="svc-body">
+              <div class="svc-title">Medicine Suggestions & Practices</div>
+              <p class="svc-text">
+                Suggest medicine and practices for your health.
+              </p>
+              <ul class="svc-list">
+                <li>Symptom Analysis</li>
+                <li>Risk Assessment</li>
+                <li>Treatment Suggestions</li>
+              </ul>
+            </div>
+            <div class="svc-actions">
+              <button class="btn-learn" onclick="location.href='symptoms.html'">Learn More →</button>
+            </div>
+          </article>
+
+          <!-- Card 3 -->
+          <article class="service-card">
+            <div class="svc-media">
+              <img src="static/assets/medicaldocumentation.jpg" alt="Medical Documentation Reader" loading="lazy">
+            </div>
+            <div class="svc-body">
+              <div class="svc-title">Medical Documentation Reader</div>
+              <p class="svc-text">
+                Read medical documentation instantly.
+              </p>
+              <ul class="svc-list">
+                <li>Prescription Management</li>
+                <li>Drug Interactions</li>
+                <li>Home Delivery</li>
+              </ul>
+            </div>
+            <div class="svc-actions">
+              <button class="btn-learn" onclick="location.href= 'medicaldict.html'">Learn More →</button>
+            </div>
+          </article>
+
+          <!-- Card 4 -->
+          <article class="service-card">
+            <div class="svc-media">
+              <img src="static/assets/Dashboard_835_lab-results_10_23.jpeg" alt="Test Results & History" loading="lazy">
+            </div>
+            <div class="svc-body">
+              <div class="svc-title">Test Results & History</div>
+              <p class="svc-text">
+                Upload your test results and keep track of your medical history.
+              </p>
+              <ul class="svc-list">
+                <li>Emergency Triage</li>
+                <li>Provider Connection</li>
+                <li>Real-time Support</li>
+              </ul>
+            </div>
+            <div class="svc-actions">
+              <button class="btn-learn" onclick="location.href='pdfupload.html'">Learn More →</button>
+            </div>
+          </article>
+
+        </div>
+
+    </section>
+
+    <!-- ===================== ABOUT (expanded) ===================== -->
+    <section id="about" class="about">
+      <div class="container about-grid">
+        <div>
+          <h2 class="headline">Why <span class="accent">UNOMEDS</span>?</h2>
+          <p>
+            We’re building accessible, privacy-first AI healthcare tools. From conversational
+            triage to prescription assistance, our goal is to help users understand symptoms,
+            manage documents, and make informed decisions—fast.
+          </p>
+          <ul class="points">
+            <li>HIPAA-aware design and careful data handling</li>
+            <li>High availability with sub-30s typical responses</li>
+            <li>Practical guidance and when-to-see-a-professional prompts</li>
+          </ul>
+        </div>
+        <div class="about-box">
+          <strong>What’s next</strong>
+          <p>
+            Deeper provider integrations, richer PDF/test-result understanding, and proactive
+            follow-ups based on your preferences.
+          </p>
+          <strong>Our promise</strong>
+          <p>
+            Clear disclaimers, safety guardrails, and respect for your privacy—always.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FAQ ===================== -->
+    <section class="faq">
+      <div class="container">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-wrap">
+          <details>
+            <summary>Is my data secure?</summary>
+            <p>We follow HIPAA-aware design principles and minimize data retention. Your uploads remain private to your account.</p>
+          </details>
+          <details>
+            <summary>Can UNOMEDS replace a doctor?</summary>
+            <p>No. We provide guidance and next steps, not a diagnosis. If you experience red-flag symptoms, seek medical care immediately.</p>
+          </details>
+          <details>
+            <summary>What documents can I upload?</summary>
+            <p>Prescriptions, lab results (PDF), and medical reports. We’ll expand supported formats soon.</p>
+          </details>
+          <details>
+            <summary>How fast is the response?</summary>
+            <p>Typical responses are under 30 seconds depending on load, with a target accuracy rate of 98% in supported tasks.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer id="contact">
+    <div class="footer-content">
+      <div>
+        <h4>UNOMEDS</h4>
+        <p>Your AI Doctor in One Click. Making quality healthcare accessible to everyone through
+          cutting-edge artificial intelligence technology.</p>
+      </div>
+
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Our Services</h4>
+        <ul>
+          <li>Digital Prescription Assistant</li>
+          <li>Medicine Suggestions & Practices</li>
+          <li>Medical Documentation Reader</li>
+          <li>Test Results & History</li>
+          <li>Health Monitoring</li>
+          <li>Prescription Management</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Stay Connected</h4>
+        <p><a href="mailto:soumalyabanik4@gmail.com">support@unomeds.com</a></p>
+        <p>+1 (555) 123-4567</p>
+        <p>India</p>
+        <div class="newsletter">
+          <input type="email" placeholder="Enter your email"/>
+          <button type="button" onclick="alert('Thanks for subscribing!')">Subscribe</button>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      © 2024 UNOMEDS. All Rights Reserved. · Privacy Policy · Terms of Service · HIPAA Compliant
+    </div>
+  </footer>
+
+  <!-- Floating AI Button -->
+  <div class="ai-button" onclick="location.href='chatbot.html'">AI</div>
+
+</body>
+</html>
