@@ -1,6 +1,4 @@
-Here’s a professional `README.md` tailored for your UNOMEDS medical chatbot project:
 
-```markdown
 # UNOMEDS — AI Medical Chatbot
 
 UNOMEDS is a Flask-based AI medical support chatbot powered by Google Gemini. It provides step-by-step medical advice, information about diseases, symptoms, medicines, treatments, and wellness tips. The chatbot is designed to be simple and easy to use for all age groups, including elderly users.
